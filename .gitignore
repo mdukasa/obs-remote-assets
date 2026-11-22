@@ -1,0 +1,7 @@
+# made by tools/pictures.py and tools/make.py while working
+tools/demo-data.js
+tools/demo.html
+tools/frame.html
+tools/terminal.html
+__pycache__/
+*.pyc
