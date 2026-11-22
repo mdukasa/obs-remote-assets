@@ -46,7 +46,7 @@ C = {"Gray": "#cccccc", "DarkGray": "#767676", "Cyan": "#61d6d6", "Green": "#16c
      "Red": "#e74856", "White": "#f2f2f2"}
 
 
-def terminal_page(url="http://192.168.1.50:8765/", version="1.6.0"):
+def terminal_page(url="http://192.168.1.50:8765/", version="1.8.0", login="#pw=demo-password"):
     out = []
     say = lambda t="", c="Gray": out.append(f'<span style="color:{C[c]}">{html.escape(t)}</span>')
     rule = lambda: say("  " + "-" * 66, "DarkGray")
@@ -71,7 +71,7 @@ def terminal_page(url="http://192.168.1.50:8765/", version="1.6.0"):
     say(); rule(); say("   ALL DONE!  Now on each phone:", "Green"); rule()
     say("   1. Connect the phone to the same Wi-Fi network as this PC.")
     say("   2. Point the phone's camera at this code and tap the link:"); say()
-    rows = qr.rows(url)
+    rows = qr.rows(url + login)  # like the real installer, the code also carries a (made-up) OBS login
     cell = 9  # px per module: one character is 1 module wide and 2 modules tall, like the real half-block QR
     svg = (f'<svg width="{len(rows[0]) * cell}" height="{len(rows) * cell}" shape-rendering="crispEdges">'
            f'<rect width="100%" height="100%" fill="#fff"/>'
@@ -79,12 +79,12 @@ def terminal_page(url="http://192.168.1.50:8765/", version="1.6.0"):
                      for y, r in enumerate(rows) for x, c in enumerate(r) if c == "1") + "</svg>")
     out.append('<span class="qr">' + svg + "</span>")
     say(); say(f"        {url}", "White"); say()
-    say("   3. Enter the OBS WebSocket password.")
-    say("      It's in OBS: Tools > WebSocket Server Settings > Show Connect Info.", "DarkGray")
-    say("   4. Add it to the home screen, so it opens like an app.")
+    say("   3. That's it: the code also signs the phone in to OBS. Add it to the home screen,")
+    say("      so it opens like an app.")
     say("      iPhone: Share > Add to Home Screen.   Android: menu > Add to Home screen.", "DarkGray")
     say(); rule()
     say("   To see this code again, open 'Phone address.html' next to Install.bat.")
+    say("   The code contains the OBS WebSocket password, so only show it to people who may control OBS.", "DarkGray")
     say("   Tip: give this PC a fixed IP address in your router, so the code never changes.", "DarkGray"); say()
     body = "\n".join(out)
     page = f"""<!doctype html><meta charset="utf-8"><style>
