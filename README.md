@@ -29,7 +29,7 @@ python pictures.py   # draws the hall -> venue/, and demo-data.js for the fake O
 python make.py       # photographs the app and the installer -> screenshots/
 ```
 
-Run `make.py` again after a UI change in obs-remote and the screenshots show the new version. The drawing is seeded, so `pictures.py` gives the same pictures every time.
+Run `make.py` again after a UI change in obs-remote and the screenshots show the new version. obs-remote's README shows the files in `screenshots/` straight from this repo, so pushing new ones here updates that page too. The drawing is seeded, so `pictures.py` gives the same pictures every time.
 
 ## How the tools work
 - **`pictures.py`** draws one large hall with Pillow and crops it the way a PTZ camera would frame it. It also writes `demo-data.js`: the views as base64 pictures, plus preset thumbnails.
