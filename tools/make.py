@@ -48,7 +48,7 @@ def setup_status(first_run):
     login = "#pw=demo-password"  # a made-up OBS login, like the real code carries
     ready = not first_run
     return {
-        "version": "1.11.1", "port": 8765, "folder": r"C:\Users\venue\AppData\Local\Programs\OBS Remote",
+        "version": open(os.path.join(REPO, "VERSION"), encoding="utf-8").read().strip(), "port": 8765, "folder": r"C:\Users\venue\AppData\Local\Programs\OBS Remote",
         "data": r"C:\Users\venue\AppData\Local\OBS Remote",
         "obs": {"running": True, "ok": ready, "error": None if ready else "WebSocket server is off", "version": "32.2.2",
                 "streaming": False, "recording": False, "ptz": {"ok": ready, "count": 3 if ready else 0, "error": None}},
@@ -60,9 +60,9 @@ def setup_status(first_run):
         "firewall": {"ok": ready, "exists": ready},
         "server": {"answering": ready, "error": None if ready else "Connection refused", "startup": ready, "startmenu": ready},
         "lan": [{"alias": "Ethernet", "ip": "192.168.1.50", "dhcp": False, "gateway": "192.168.1.1"}],
-        "codes": [{"label": "On this network (Ethernet)", "url": url, "folded": False, "svg": qr.svg(url + login, scale=7)}]
+        "codes": [{"label": "On this network (Ethernet)", "url": url, "folded": False, "svg": qr.svg(url + login, scale=7, logo=True)}]
                  + ([{"label": "Over Tailscale", "url": "http://100.64.10.20:8765/", "folded": True,
-                      "svg": qr.svg("http://100.64.10.20:8765/" + login, scale=7)}] if ready else []),
+                      "svg": qr.svg("http://100.64.10.20:8765/" + login, scale=7, logo=True)}] if ready else []),
         "phones": [{"ip": "192.168.1.61", "ago": 25, "tailscale": False, "here": False, "name": None},
                    {"ip": "100.64.10.31", "ago": 610, "tailscale": True, "here": False, "name": "Sam's phone"}] if ready else [],
         "job": {"name": None, "running": False, "lines": [], "ok": None, "error": None, "done": None, "seq": 0},
@@ -158,7 +158,7 @@ def main():
     phone(os.path.join(OUT, "camera.png"), 1000, "?tab=cam")
     # installer.png keeps its name (older obs-remote READMEs link to it); since 1.11 it shows the setup window
     # Heights end each shot in the gap before the "Optional" heading.
-    framed(os.path.join(OUT, "installer.png"), setup_page(), 880, 936)
+    framed(os.path.join(OUT, "installer.png"), setup_page(), 880, 988)
     framed(os.path.join(OUT, "setup-first-run.png"), setup_page(first_run=True), 880, 712)
 
 
