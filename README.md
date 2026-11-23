@@ -13,7 +13,7 @@ Pictures and mockup tools for [OBS Remote](https://github.com/mdukasa/obs-remote
 ## What's here
 | Folder | Contents |
 |---|---|
-| `screenshots/` | Finished phone shots of the app: `live.png` and `camera.png` (780×2000, a 390 px phone at 2×), and `installer.png`, the setup window with a working QR code for `http://192.168.1.50:8765/`. |
+| `screenshots/` | Finished phone shots of the app: `live.png` and `camera.png` (780×2000, a 390 px phone at 2×), `installer.png`, the setup window (obs-remote 1.11+) when everything is ready, with a working QR code for `http://192.168.1.50:8765/` and a made-up login, and `setup-first-run.png`, the same window on a PC that isn't set up yet. |
 | `venue/venue.jpg` | The whole made-up hall, 3200×1800. |
 | `venue/views/` | Camera views of the hall at 1920×1080: `wide`, `stage`, `lectern`, `lectern-lower-third`, `speaker`, `guest`, `screen`, `audience`. The close-ups are enlarged crops, so they're a little soft. |
 | `tools/` | The scripts that make all of the above. |
@@ -26,7 +26,7 @@ Needs Windows, Python 3 with Pillow (`pip install pillow`), Microsoft Edge, and 
 ```
 cd tools
 python pictures.py   # draws the hall -> venue/, and demo-data.js for the fake OBS
-python make.py       # photographs the app and the installer -> screenshots/
+python make.py       # photographs the app and the setup window -> screenshots/
 ```
 
 Run `make.py` again after a UI change in obs-remote and the screenshots show the new version. obs-remote's README shows the files in `screenshots/` straight from this repo, so pushing new ones here updates that page too. The drawing is seeded, so `pictures.py` gives the same pictures every time.

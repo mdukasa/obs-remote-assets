@@ -3,10 +3,10 @@
     python pictures.py   # once: draws the made-up venue -> demo-data.js
     python make.py       # needs an obs-remote checkout: next to this repo, or set OBS_REMOTE=path
 
-The app shots are the real www/index.html from obs-remote, connected to fake-obs.js instead of OBS. The
-installer shot is terminal.html, a copy of what setup/install.ps1 prints, with a real QR code from setup/qr.py.
+The app shots are the real www/index.html from obs-remote, connected to fake-obs.js instead of OBS. The setup
+window shots (installer.png, setup-first-run.png) are the real setup/panel.html, fed a made-up status for a venue
+PC at 192.168.1.50, with a real QR code from setup/qr.py (it decodes to http://192.168.1.50:8765/#pw=demo-password).
 """
-import html
 import os
 import subprocess
 import sys
@@ -41,62 +41,50 @@ def demo_page():
     return path
 
 
-# ---- installer screenshot: the lines install.ps1 prints, with its console colours ----------------------
-C = {"Gray": "#cccccc", "DarkGray": "#767676", "Cyan": "#61d6d6", "Green": "#16c60c", "Yellow": "#f9f1a5",
-     "Red": "#e74856", "White": "#f2f2f2"}
+# ---- setup window: the real setup/panel.html, with a made-up status instead of this PC's ----------------
+def setup_status(first_run):
+    """What setup/panel.py's /api/status would say on a made-up venue PC (192.168.1.50, router 192.168.1.1)."""
+    url = "http://192.168.1.50:8765/"
+    login = "#pw=demo-password"  # a made-up OBS login, like the real code carries
+    ready = not first_run
+    return {
+        "version": "1.11.1", "port": 8765, "folder": r"C:\Users\venue\AppData\Local\Programs\OBS Remote",
+        "data": r"C:\Users\venue\AppData\Local\OBS Remote",
+        "obs": {"running": True, "ok": ready, "error": None if ready else "WebSocket server is off", "version": "32.2.2",
+                "streaming": False, "recording": False, "ptz": {"ok": ready, "count": 3 if ready else 0, "error": None}},
+        "ws": {"config": True, "enabled": ready, "port": 4455, "auth": True}, "password": "demo-password" if ready else "",
+        "ptz": {"dll": "obs-ptz.dll", "version": "1.0.0", "ok": True} if ready else None,
+        "ts": {"installed": ready, "running": ready, "ip": "100.64.10.20" if ready else None, "name": "venue-pc",
+               "chosen": ready, "route": "192.168.1.50/32" if ready else None, "want": "192.168.1.50/32",
+               "route_ok": ready, "stale": False, "dup": None, "key_off": True, "expires": ""},
+        "firewall": {"ok": ready, "exists": ready},
+        "server": {"answering": ready, "error": None if ready else "Connection refused", "startup": ready, "startmenu": ready},
+        "lan": [{"alias": "Ethernet", "ip": "192.168.1.50", "dhcp": False, "gateway": "192.168.1.1"}],
+        "codes": [{"label": "On this network (Ethernet)", "url": url, "folded": False, "svg": qr.svg(url + login, scale=7)}]
+                 + ([{"label": "Over Tailscale", "url": "http://100.64.10.20:8765/", "folded": True,
+                      "svg": qr.svg("http://100.64.10.20:8765/" + login, scale=7)}] if ready else []),
+        "phones": [{"ip": "192.168.1.61", "ago": 25, "tailscale": False, "here": False, "name": None},
+                   {"ip": "100.64.10.31", "ago": 610, "tailscale": True, "here": False, "name": "Sam's phone"}] if ready else [],
+        "job": {"name": None, "running": False, "lines": [], "ok": None, "error": None, "done": None, "seq": 0},
+    }
 
 
-def terminal_page(url="http://192.168.1.50:8765/", version="1.8.0", login="#pw=demo-password"):
-    out = []
-    say = lambda t="", c="Gray": out.append(f'<span style="color:{C[c]}">{html.escape(t)}</span>')
-    rule = lambda: say("  " + "-" * 66, "DarkGray")
-
-    def step(n, label, state, detail):
-        color = {"OK": "Green", "WARN": "Yellow", "INFO": "Gray"}[state]
-        tag = {"OK": " OK ", "WARN": "NOTE", "INFO": " -- "}[state]
-        num = f"[{n}/4]" if n else "     "
-        out.append(html.escape(f"  {num} {label.ljust(22, '.')} ") + f'<span style="color:{C[color]}">{tag}</span>'
-                   + html.escape(f"  {detail}"))
-
-    hint = lambda t: say("              " + t, "Yellow")
-    say(); say("  OBS Remote setup", "Cyan"); say("  ================", "Cyan")
-    say("  Sets up the phone remote for OBS on this PC. It takes about a minute."); say()
-    step(1, "Python", "OK", "version 3.12")
-    step(2, "OBS remote control", "OK", "WebSocket server is on (port 4455)")
-    step(0, "PTZ cameras", "OK", "obs-ptz 1.0.0")
-    hint("In OBS: PTZ Controls dock > Settings > Websocket access = 'Control'.")
-    say("              Windows will now ask for permission to let phones on this network connect. Click Yes.", "Cyan")
-    step(3, "Windows Firewall", "OK", "phones on this network can connect")
-    step(4, "OBS Remote server", "OK", f"running (version {version}), starts with Windows")
-    say(); rule(); say("   ALL DONE!  Now on each phone:", "Green"); rule()
-    say("   1. Connect the phone to the same Wi-Fi network as this PC.")
-    say("   2. Point the phone's camera at this code and tap the link:"); say()
-    rows = qr.rows(url + login)  # like the real installer, the code also carries a (made-up) OBS login
-    cell = 9  # px per module: one character is 1 module wide and 2 modules tall, like the real half-block QR
-    svg = (f'<svg width="{len(rows[0]) * cell}" height="{len(rows) * cell}" shape-rendering="crispEdges">'
-           f'<rect width="100%" height="100%" fill="#fff"/>'
-           + "".join(f'<rect x="{x * cell}" y="{y * cell}" width="{cell}" height="{cell}"/>'
-                     for y, r in enumerate(rows) for x, c in enumerate(r) if c == "1") + "</svg>")
-    out.append('<span class="qr">' + svg + "</span>")
-    say(); say(f"        {url}", "White"); say()
-    say("   3. That's it: the code also signs the phone in to OBS. Add it to the home screen,")
-    say("      so it opens like an app.")
-    say("      iPhone: Share > Add to Home Screen.   Android: menu > Add to Home screen.", "DarkGray")
-    say(); rule()
-    say("   To see this code again, open 'Phone address.html' next to Install.bat.")
-    say("   The code contains the OBS WebSocket password, so only show it to people who may control OBS.", "DarkGray")
-    say("   Tip: give this PC a fixed IP address in your router, so the code never changes.", "DarkGray"); say()
-    body = "\n".join(out)
-    page = f"""<!doctype html><meta charset="utf-8"><style>
-html,body{{margin:0;background:#0c0c0c}}
-.win{{margin:0;background:#0c0c0c;width:860px}}
-.bar{{height:34px;background:#2b2b2b;display:flex;align-items:center;padding:0 12px;gap:8px;font:13px "Segoe UI",sans-serif;color:#ddd}}
-.bar i{{width:16px;height:16px;border-radius:3px;background:#012456;display:inline-block}}
-.bar b{{flex:1;font-weight:400}} .bar span{{color:#999;letter-spacing:14px}}
-pre{{margin:0;padding:6px 14px 10px;font:14.5px/18px "Cascadia Mono",Consolas,monospace;color:#ccc;white-space:pre}}
-.qr{{display:inline-block;margin-left:54px;vertical-align:top}} .qr svg{{display:block}}
-</style><div class="win"><div class="bar"><i></i><b>OBS Remote setup</b><span>–▢✕</span></div><pre>{body}</pre></div>"""
-    path = os.path.join(HERE, "terminal.html")
+def setup_page(first_run=False):
+    """setup/panel.html with fetch() answered from setup_status() instead of the setup window's own server."""
+    import json
+    with open(os.path.join(REPO, "setup", "panel.html"), encoding="utf-8") as f:
+        page = f.read()
+    shim = ("<script>const DEMO=%s;window.fetch=async u=>new Response(JSON.stringify(String(u).startsWith('/api/job')"
+            "?DEMO.job:DEMO),{status:200,headers:{'Content-Type':'application/json'}});</script>\n"
+            % json.dumps(setup_status(first_run)))
+    marker = "<script>\nconst TOKEN"
+    assert marker in page, "panel script start not found"
+    page = page.replace(marker, shim + marker, 1).replace('src="/icon.svg"', 'src="icon.svg"')
+    with open(os.path.join(REPO, "www", "icon.svg"), encoding="utf-8") as f:
+        icon = f.read()
+    with open(os.path.join(HERE, "icon.svg"), "w", encoding="utf-8") as f:
+        f.write(icon)
+    path = os.path.join(HERE, "setup-window%s.html" % ("-first-run" if first_run else ""))
     with open(path, "w", encoding="utf-8") as f:
         f.write(page)
     return path
@@ -146,6 +134,21 @@ def trimmed(out, page, w, h):
     print("wrote", os.path.relpath(out, ROOT))
 
 
+def framed(out, page, w, h, margin=20):
+    """Shoot `page` in a w x h window (h chosen so the bottom edge falls between two cards), then trim the page's
+    own margins and put an even `margin` (CSS px) of background round it."""
+    shoot(page, out, w, h)
+    im = Image.open(out).convert("RGB")
+    bg_px = im.getpixel((im.width - 1, im.height - 1))
+    box = ImageChops.difference(im, Image.new("RGB", im.size, bg_px)).getbbox()
+    im = im.crop(box)
+    m = margin * 2  # screenshots are at 2x
+    pad = Image.new("RGB", (im.width + 2 * m, im.height + 2 * m), bg_px)
+    pad.paste(im, (m, m))
+    pad.save(out, optimize=True)
+    print("wrote", os.path.relpath(out, ROOT), pad.size)
+
+
 def main():
     if not EDGE:
         sys.exit("Microsoft Edge not found")
@@ -153,7 +156,10 @@ def main():
     demo_page()
     phone(os.path.join(OUT, "live.png"), 1000)
     phone(os.path.join(OUT, "camera.png"), 1000, "?tab=cam")
-    trimmed(os.path.join(OUT, "installer.png"), terminal_page(), 860, 1060)
+    # installer.png keeps its name (older obs-remote READMEs link to it); since 1.11 it shows the setup window
+    # Heights end each shot in the gap before the "Optional" heading.
+    framed(os.path.join(OUT, "installer.png"), setup_page(), 880, 936)
+    framed(os.path.join(OUT, "setup-first-run.png"), setup_page(first_run=True), 880, 712)
 
 
 if __name__ == "__main__":

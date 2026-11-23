@@ -2,6 +2,8 @@
 tools/demo-data.js
 tools/demo.html
 tools/frame.html
-tools/terminal.html
+tools/setup-window.html
+tools/setup-window-first-run.html
+tools/icon.svg
 __pycache__/
 *.pyc
