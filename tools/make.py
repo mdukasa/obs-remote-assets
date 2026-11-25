@@ -159,8 +159,8 @@ def main():
     phone(os.path.join(OUT, "camera.png"), 840, "?tab=cam")
     # installer.png keeps its name (older obs-remote READMEs link to it); since 1.11 it shows the setup window
     # Heights end each shot in the gap before the "Optional" heading.
-    framed(os.path.join(OUT, "installer.png"), setup_page(), 880, 988)
-    framed(os.path.join(OUT, "setup-first-run.png"), setup_page(first_run=True), 880, 712)
+    framed(os.path.join(OUT, "installer.png"), setup_page(), 880, 990)
+    framed(os.path.join(OUT, "setup-first-run.png"), setup_page(first_run=True), 880, 676)
 
 
 if __name__ == "__main__":
