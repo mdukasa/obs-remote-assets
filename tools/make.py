@@ -154,8 +154,9 @@ def main():
         sys.exit("Microsoft Edge not found")
     os.makedirs(OUT, exist_ok=True)
     demo_page()
-    phone(os.path.join(OUT, "live.png"), 1000)
-    phone(os.path.join(OUT, "camera.png"), 1000, "?tab=cam")
+    # 840 px: the Camera tab ends just above the tab bar; both shots the same height so they sit level in the README
+    phone(os.path.join(OUT, "live.png"), 840)
+    phone(os.path.join(OUT, "camera.png"), 840, "?tab=cam")
     # installer.png keeps its name (older obs-remote READMEs link to it); since 1.11 it shows the setup window
     # Heights end each shot in the gap before the "Optional" heading.
     framed(os.path.join(OUT, "installer.png"), setup_page(), 880, 988)

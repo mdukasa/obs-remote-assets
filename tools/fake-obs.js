@@ -39,8 +39,14 @@
       case "GetSourceActive": return { videoActive: true, videoShowing: true };
       case "GetSourceFilterList": return { filters: [{ filterKind: "ca.secretlab.obs-ptz.onvif", filterSettings: { pan_speed_max: 1, tilt_speed_max: 1 } }] };
       case "GetPersistentData": return { slotValue: null };
-      case "GetSceneCollectionList": return { currentSceneCollectionName: "Demo" };
-      case "GetSourceScreenshot": return { imageData: D[d.sourceName] || D["Wide shot"] };
+      case "GetSceneCollectionList": return { currentSceneCollectionName: "Main Hall" };
+      // since 1.12: CUT next to TAKE needs OBS's Cut transition; About shows OBS's version
+      case "GetSceneTransitionList": return { transitions: [{ transitionName: "Cut", transitionKind: "cut_transition" }, { transitionName: "Fade", transitionKind: "fade_transition" }] };
+      case "GetVersion": return { obsVersion: "32.2.2" };
+      case "GetSourceScreenshot": {  // scene keys get their own picture where the demo has one
+        const thumb = { "Speaker + slides": "speaker", "Break": "stage", "Ending": "audience" }[d.sourceName];
+        return { imageData: D[d.sourceName] || (thumb ? "data:image/jpeg;base64," + D.thumbs[thumb] : D["Wide shot"]) };
+      }
       case "CallVendorRequest":
         if (d.vendorName === "obs-ptz") return { responseData: ptz(d.requestType, d.requestData || {}) };
         if (d.vendorName === "AdvancedSceneSwitcher") return { responseData: { isRunning: false } };
